@@ -1,38 +1,102 @@
-.App {
+body {
+  font-family: 'Courier New', monospace;
+  background-color: #0a0a0a;
+  color: #00ff00;
+  margin: 0;
+  padding: 0;
+}
+
+.game-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #1a1a1a;
+  border: 2px solid #00ff00;
+  border-radius: 10px;
+  box-shadow: 0 0 10px #00ff00;
+}
+
+h1, h2, h3 {
   text-align: center;
+  text-shadow: 0 0 5px #00ff00;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.location-info, .player-stats, .actions, .quests {
+  background-color: #0a0a0a;
+  border: 1px solid #00ff00;
+  border-radius: 5px;
+  padding: 10px;
+  margin-bottom: 20px;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+.player-stats {
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  justify-content: space-around;
+  flex-wrap: wrap;
+}
+
+.stat {
+  text-align: center;
+  margin: 5px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
 }
 
-.App-link {
-  color: #61dafb;
+button {
+  background-color: #1a1a1a;
+  color: #00ff00;
+  border: 1px solid #00ff00;
+  border-radius: 5px;
+  padding: 10px 20px;
+  margin: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+button:hover {
+  background-color: #00ff00;
+  color: #0a0a0a;
+  box-shadow: 0 0 10px #00ff00;
+}
+
+.health-bar {
+  width: 100%;
+  height: 20px;
+  background-color: #1a1a1a;
+  border: 1px solid #00ff00;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.health-bar-fill {
+  height: 100%;
+  background-color: #00ff00;
+  transition: width 0.3s ease;
+}
+
+.quest {
+  margin-bottom: 10px;
+  padding: 5px;
+  border: 1px solid #005500;
+  border-radius: 3px;
+}
+
+@keyframes glow {
+  0% {
+    text-shadow: 0 0 5px #00ff00;
   }
-  to {
-    transform: rotate(360deg);
+  50% {
+    text-shadow: 0 0 20px #00ff00, 0 0 30px #00ff00;
   }
+  100% {
+    text-shadow: 0 0 5px #00ff00;
+  }
+}
+
+h1 {
+  animation: glow 2s infinite;
 }
