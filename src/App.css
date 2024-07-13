@@ -47,8 +47,9 @@ h1, h2, h3 {
   background-color: rgba(0, 0, 50, 0.9); /* Dark blue background */
   border: 1px solid #0000ff; /* Blue border */
   border-radius: 5px;
-  padding: 10px;
+  padding-bottom: 10px;
   margin-bottom: 5px;
+  height: 100px;
 }
 
 .player-stats {
@@ -161,11 +162,18 @@ h1 {
 
 .monster-health-bar-fill {
   background-color: #F60002; /* Orange Red */
+  padding: 0;
+  margin: 0;
+}
+.monster-stats {
+  background-color: rgba(26, 26, 26, 0.2);
 }
 
 .fight-animation {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100px; /* Adjust height as needed */
+  height: 70px; /* Adjust height as needed */
+  padding: 0;
+  margin: 0;
 }

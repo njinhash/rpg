@@ -387,10 +387,6 @@ const Game = () => {
   return (
     <div className="game-container">
       <h1>Cyber Quest RPG</h1>
-      <div className="location-info">
-        <h2>{locations[gameState.location].name}</h2>
-        <p>{locations[gameState.location].description}</p>
-      </div>
       <div className="player-stats">
         <div className="stat stat-health">
           <h3>Health</h3>
@@ -481,6 +477,10 @@ const Game = () => {
           <p>{message}</p>
         </div>
       )}
+      <div className="location-info">
+        <h2>{locations[gameState.location].name}</h2>
+        <p>{locations[gameState.location].description}</p>
+      </div>
     </div>
   );
 };
