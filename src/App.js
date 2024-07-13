@@ -86,6 +86,7 @@ const Game = () => {
 
   const handleAction = (action) => {
     action();
+    setShowQuests(false); // Hide quests display when a new button is clicked
   };
 
   const buyHealth = () => {
