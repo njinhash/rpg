@@ -28,6 +28,7 @@ const Game = () => {
   const [showQuests, setShowQuests] = useState(false);
   const [showEasterEgg, setShowEasterEgg] = useState(false); // New state for Easter Egg
   const [easterEggPlayed, setEasterEggPlayed] = useState(false); // Track if Easter Egg has been played
+  const [message, setMessage] = useState(''); // New state for messages
 
   const weapons = [
     { name: 'stick', power: 5 },
@@ -86,6 +87,15 @@ const Game = () => {
     updateGame();
   }, [gameState.location, player, levelUp, checkQuestProgress]);
 
+  useEffect(() => {
+    if (message) {
+      const timer = setTimeout(() => {
+        setMessage('');
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [message]);
+
   const handleAction = (action) => {
     action();
     setShowQuests(false); // Hide quests display when a new button is clicked
@@ -96,14 +106,17 @@ const Game = () => {
   };
 
   const buyHealth = () => {
-    if (player.gold >= 10) {
+    if (player.health === player.maxHealth) {
+      setMessage('You are already at full health.');
+    } else if (player.gold >= 10) {
       setPlayer({
         ...player,
         health: Math.min(player.health + 10, player.maxHealth),
         gold: player.gold - 10,
       });
+      setMessage(''); // Clear message
     } else {
-      // Display "Not enough gold" message
+      setMessage('Not enough gold to buy health.');
     }
   };
 
@@ -115,8 +128,11 @@ const Game = () => {
         currentWeaponIndex: player.currentWeaponIndex + 1,
         inventory: [...player.inventory, weapons[player.currentWeaponIndex + 1].name],
       });
+      setMessage(''); // Clear message
+    } else if (player.gold < 30) {
+      setMessage('Not enough gold to buy a weapon.');
     } else {
-      // Display "Not enough gold" or "You have the best weapon" message
+      setMessage('You have the best weapon.');
     }
   };
 
@@ -146,8 +162,9 @@ const Game = () => {
     updateQuestProgress(2, goldGained);
 
     console.log(`You defeated the ${monster.name}! Gained ${xpGained} XP and ${goldGained} gold.`);
-    setShowEasterEgg(true); // Show Easter Egg option after winning a monster battle
-    setEasterEggPlayed(false); // Reset Easter Egg played status
+    if (!easterEggPlayed) {
+      setShowEasterEgg(true); // Show Easter Egg option after winning a monster battle
+    }
   };
 
   const checkQuests = () => {
@@ -277,19 +294,15 @@ const Game = () => {
   };
 
   const pickTwo = () => {
-    if (!easterEggPlayed) {
-      pick(2);
-      setEasterEggPlayed(true); // Mark Easter Egg as played
-      setShowEasterEgg(false); // Close Easter Egg after playing
-    }
+    pick(2);
+    setEasterEggPlayed(true); // Mark Easter Egg as played
+    setShowEasterEgg(false); // Close Easter Egg after playing
   };
 
   const pickEight = () => {
-    if (!easterEggPlayed) {
-      pick(8);
-      setEasterEggPlayed(true); // Mark Easter Egg as played
-      setShowEasterEgg(false); // Close Easter Egg after playing
-    }
+    pick(8);
+    setEasterEggPlayed(true); // Mark Easter Egg as played
+    setShowEasterEgg(false); // Close Easter Egg after playing
   };
 
   const pick = (guess) => {
@@ -306,6 +319,7 @@ const Game = () => {
       console.log('Wrong! You lose 10 health!');
       setPlayer(prevPlayer => ({ ...prevPlayer, health: prevPlayer.health - 10 }));
     }
+    setShowEasterEgg(false); // Close Easter Egg after playing
   };
 
   // Randomly assign the Easter Egg action to one of the "Go to town square" buttons
@@ -445,6 +459,11 @@ const Game = () => {
               <p>Progress: {quest.progress}/{quest.target}</p>
             </div>
           ))}
+        </div>
+      )}
+      {message && (
+        <div className="message">
+          <p>{message}</p>
         </div>
       )}
     </div>
