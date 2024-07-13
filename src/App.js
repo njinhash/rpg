@@ -25,6 +25,8 @@ const Game = () => {
     { id: 2, title: 'Collect 100 Gold', description: 'Amass a fortune of 100 gold.', target: 100, progress: 50, reward: 20, completed: false },
   ]);
 
+  const [showQuests, setShowQuests] = useState(false);
+
   const weapons = [
     { name: 'stick', power: 5 },
     { name: 'dagger', power: 30 },
@@ -140,10 +142,7 @@ const Game = () => {
   };
 
   const checkQuests = () => {
-    console.log('Current Quests:');
-    quests.forEach(quest => {
-      console.log(`${quest.title} - Progress: ${quest.progress}/${quest.target}`);
-    });
+    setShowQuests(!showQuests);
   };
 
   const updateQuestProgress = (questId, amount) => {
@@ -199,6 +198,7 @@ const Game = () => {
     if (newPlayerHealth <= 0) {
       lose();
     } else if (newMonsterHealth <= 0) {
+      simulateFightWin(monster); // Call simulateFightWin when monster is defeated
       if (monster.name === 'dragon') {
         winGame();
       } else {
@@ -389,11 +389,6 @@ const Game = () => {
             ></div>
           </div>
           <p className="monster-health-text">{gameState.monsterHealth}/{gameState.fighting.health}</p>
-          <div className="actions">
-            <button onClick={attack}>Attack</button>
-            <button onClick={dodge}>Dodge</button>
-            <button onClick={goTown}>Retreat</button>
-          </div>
         </div>
       )}
       <div className="actions">
@@ -404,20 +399,26 @@ const Game = () => {
               {option}
             </button>
           ))}
-          <button onClick={checkQuests}>Check Quests</button>
-          <button onClick={easterEgg}>Easter Egg</button>
+          {gameState.location === 'town' && (
+            <>
+              <button onClick={checkQuests}>Check Quests</button>
+              <button onClick={easterEgg}>Easter Egg</button>
+            </>
+          )}
         </div>
       </div>
-      <div className="quests">
-        <h3>Quests</h3>
-        {quests.map(quest => (
-          <div key={quest.id} className="quest">
-            <h4>{quest.title}</h4>
-            <p>{quest.description}</p>
-            <p>Progress: {quest.progress}/{quest.target}</p>
-          </div>
-        ))}
-      </div>
+      {showQuests && (
+        <div className="quests">
+          <h3>Quests</h3>
+          {quests.map(quest => (
+            <div key={quest.id} className="quest">
+              <h4>{quest.title}</h4>
+              <p>{quest.description}</p>
+              <p>Progress: {quest.progress}/{quest.target}</p>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
