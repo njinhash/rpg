@@ -124,6 +124,16 @@ button:hover {
   z-index: 1000; /* Ensure it appears above other elements */
 }
 
+.message {
+  font-size: 1.5em; /* Increase the font size */
+  font-weight: bold; /* Make the font bold */
+  color: #ff0000; /* Optional: Change the color to red for better visibility */
+  text-align: center; /* Center the text */
+  margin: 10px 0; /* Add some margin for spacing */
+  background-color: rgba(10, 10, 10, 0.7);
+}
+
+
 @keyframes glow {
   0% {
     text-shadow: 0 0 5px #00ff00;
