@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import './Game.css';
+import React, { useState, useEffect, useCallback } from 'react';
+import './App.css';
 
 const Game = () => {
   const [player, setPlayer] = useState({
@@ -28,6 +28,7 @@ const Game = () => {
   const weapons = [
     { name: 'stick', power: 5 },
     { name: 'dagger', power: 30 },
+    { name: 'claw hammer', power: 50 },
     { name: 'sword', power: 100 },
   ];
 
@@ -37,64 +38,52 @@ const Game = () => {
     { name: 'dragon', level: 20, health: 300 },
   ];
 
-  const locations = {
-    town: {
-      name: 'Town Square',
-      description: 'You are in the town square. You see a sign that says "Store".',
-      options: ['Go to store', 'Go to cave', 'Check quests'],
-    },
-    store: {
-      name: 'Store',
-      description: 'You enter the store.',
-      options: ['Buy health (10 gold)', 'Buy weapon (30 gold)', 'Go to town square'],
-    },
-    cave: {
-      name: 'Cave',
-      description: 'You enter the cave. You see some monsters.',
-      options: ['Fight slime', 'Fight fanged beast', 'Go to town square'],
-    },
-  };
+  const levelUp = useCallback(() => {
+    setPlayer(prevPlayer => ({
+      ...prevPlayer,
+      level: prevPlayer.level + 1,
+      maxHealth: prevPlayer.maxHealth + 10,
+      health: prevPlayer.maxHealth + 10,
+      xp: prevPlayer.xp - (prevPlayer.level * 10),
+    }));
+    console.log(`Congratulations! You've reached level ${player.level + 1}!`);
+  }, [player.level]);
+
+  const completeQuest = useCallback((questId) => {
+    const quest = quests.find(q => q.id === questId);
+    if (quest) {
+      setPlayer(prevPlayer => ({
+        ...prevPlayer,
+        xp: prevPlayer.xp + quest.reward,
+      }));
+      setQuests(prevQuests => prevQuests.map(q => 
+        q.id === questId ? { ...q, completed: true } : q
+      ));
+      console.log(`Quest completed: ${quest.title}! Rewarded ${quest.reward} XP.`);
+    }
+  }, [quests]);
+
+  const checkQuestProgress = useCallback(() => {
+    quests.forEach(quest => {
+      if (quest.progress >= quest.target && !quest.completed) {
+        completeQuest(quest.id);
+      }
+    });
+  }, [quests, completeQuest]);
 
   useEffect(() => {
-    updateGame();
-  }, [gameState.location, player]);
+    const updateGame = () => {
+      if (player.xp >= player.level * 10) {
+        levelUp();
+      }
+      checkQuestProgress();
+    };
 
-  const updateGame = () => {
-    if (player.xp >= player.level * 10) {
-      levelUp();
-    }
-    checkQuestProgress();
-  };
+    updateGame();
+  }, [gameState.location, player, levelUp, checkQuestProgress]);
 
   const handleAction = (action) => {
-    switch (action) {
-      case 'Go to store':
-        setGameState({ ...gameState, location: 'store' });
-        break;
-      case 'Go to cave':
-        setGameState({ ...gameState, location: 'cave' });
-        break;
-      case 'Go to town square':
-        setGameState({ ...gameState, location: 'town' });
-        break;
-      case 'Buy health (10 gold)':
-        buyHealth();
-        break;
-      case 'Buy weapon (30 gold)':
-        buyWeapon();
-        break;
-      case 'Fight slime':
-        startFight('slime');
-        break;
-      case 'Fight fanged beast':
-        startFight('fanged beast');
-        break;
-      case 'Check quests':
-        checkQuests();
-        break;
-      default:
-        console.log('Unknown action');
-    }
+    action();
   };
 
   const buyHealth = () => {
@@ -126,10 +115,10 @@ const Game = () => {
     const monster = monsters.find(m => m.name === monsterName);
     setGameState({
       ...gameState,
+      location: 'fight',
       fighting: monster,
       monsterHealth: monster.health,
     });
-    simulateFightWin(monster);
   };
 
   const simulateFightWin = (monster) => {
@@ -157,17 +146,6 @@ const Game = () => {
     });
   };
 
-  const levelUp = () => {
-    setPlayer(prevPlayer => ({
-      ...prevPlayer,
-      level: prevPlayer.level + 1,
-      maxHealth: prevPlayer.maxHealth + 10,
-      health: prevPlayer.maxHealth + 10,
-      xp: prevPlayer.xp - (prevPlayer.level * 10),
-    }));
-    console.log(`Congratulations! You've reached level ${player.level + 1}!`);
-  };
-
   const updateQuestProgress = (questId, amount) => {
     setQuests(prevQuests => prevQuests.map(quest => 
       quest.id === questId 
@@ -176,26 +154,190 @@ const Game = () => {
     ));
   };
 
-  const checkQuestProgress = () => {
-    quests.forEach(quest => {
-      if (quest.progress >= quest.target && !quest.completed) {
-        completeQuest(quest.id);
+  const goTown = () => {
+    setGameState({ ...gameState, location: 'town' });
+  };
+
+  const goStore = () => {
+    setGameState({ ...gameState, location: 'store' });
+  };
+
+  const goCave = () => {
+    setGameState({ ...gameState, location: 'cave' });
+  };
+
+  const fightSlime = () => {
+    startFight('slime');
+  };
+
+  const fightBeast = () => {
+    startFight('fanged beast');
+  };
+
+  const fightDragon = () => {
+    startFight('dragon');
+  };
+
+  const attack = () => {
+    const monster = gameState.fighting;
+    const monsterHealth = gameState.monsterHealth;
+    const playerHealth = player.health;
+
+    // Monster attacks
+    const monsterAttackValue = getMonsterAttackValue(monster.level);
+    const newPlayerHealth = playerHealth - monsterAttackValue;
+
+    // Player attacks
+    let newMonsterHealth = monsterHealth;
+    if (isMonsterHit()) {
+      newMonsterHealth -= weapons[player.currentWeaponIndex].power + Math.floor(Math.random() * player.xp) + 1;
+    }
+
+    setPlayer({ ...player, health: newPlayerHealth });
+    setGameState({ ...gameState, monsterHealth: newMonsterHealth });
+
+    if (newPlayerHealth <= 0) {
+      lose();
+    } else if (newMonsterHealth <= 0) {
+      if (monster.name === 'dragon') {
+        winGame();
+      } else {
+        defeatMonster();
       }
+    }
+  };
+
+  const getMonsterAttackValue = (level) => {
+    const hit = (level * 5) - (Math.floor(Math.random() * player.xp));
+    return hit > 0 ? hit : 0;
+  };
+
+  const isMonsterHit = () => {
+    return Math.random() > .2 || player.health < 20;
+  };
+
+  const dodge = () => {
+    console.log(`You dodge the attack from the ${gameState.fighting.name}`);
+  };
+
+  const defeatMonster = () => {
+    const monster = gameState.fighting;
+    const goldGained = Math.floor(monster.level * 6.7);
+    const xpGained = monster.level;
+
+    setPlayer(prevPlayer => ({
+      ...prevPlayer,
+      gold: prevPlayer.gold + goldGained,
+      xp: prevPlayer.xp + xpGained,
+    }));
+
+    setGameState({ ...gameState, location: 'killMonster' });
+  };
+
+  const lose = () => {
+    setGameState({ ...gameState, location: 'lose' });
+  };
+
+  const winGame = () => {
+    setGameState({ ...gameState, location: 'win' });
+  };
+
+  const restart = () => {
+    setPlayer({
+      name: 'Hero',
+      health: 100,
+      maxHealth: 100,
+      xp: 0,
+      gold: 50,
+      level: 1,
+      class: 'warrior',
+      inventory: ['stick'],
+      currentWeaponIndex: 0,
+    });
+    setGameState({
+      location: 'town',
+      fighting: null,
+      monsterHealth: 0,
     });
   };
 
-  const completeQuest = (questId) => {
-    const quest = quests.find(q => q.id === questId);
-    if (quest) {
-      setPlayer(prevPlayer => ({
-        ...prevPlayer,
-        xp: prevPlayer.xp + quest.reward,
-      }));
-      setQuests(prevQuests => prevQuests.map(q => 
-        q.id === questId ? { ...q, completed: true } : q
-      ));
-      console.log(`Quest completed: ${quest.title}! Rewarded ${quest.reward} XP.`);
+  const easterEgg = () => {
+    setGameState({ ...gameState, location: 'easterEgg' });
+  };
+
+  const pickTwo = () => {
+    pick(2);
+  };
+
+  const pickEight = () => {
+    pick(8);
+  };
+
+  const pick = (guess) => {
+    const numbers = [];
+    while (numbers.length < 10) {
+      numbers.push(Math.floor(Math.random() * 11));
     }
+    console.log(`You picked ${guess}. Here are the random numbers:`);
+    numbers.forEach(num => console.log(num));
+    if (numbers.includes(guess)) {
+      console.log('Right! You win 20 gold!');
+      setPlayer(prevPlayer => ({ ...prevPlayer, gold: prevPlayer.gold + 20 }));
+    } else {
+      console.log('Wrong! You lose 10 health!');
+      setPlayer(prevPlayer => ({ ...prevPlayer, health: prevPlayer.health - 10 }));
+    }
+  };
+
+  const locations = {
+    town: {
+      name: 'Town Square',
+      description: 'You are in the town square. You see a sign that says "Store".',
+      options: ['Go to store', 'Go to cave', 'Fight dragon'],
+      actions: [goStore, goCave, fightDragon],
+    },
+    store: {
+      name: 'Store',
+      description: 'You enter the store.',
+      options: ['Buy 10 health (10 gold)', 'Buy weapon (30 gold)', 'Go to town square'],
+      actions: [buyHealth, buyWeapon, goTown],
+    },
+    cave: {
+      name: 'Cave',
+      description: 'You enter the cave. You see some monsters.',
+      options: ['Fight slime', 'Fight fanged beast', 'Go to town square'],
+      actions: [fightSlime, fightBeast, goTown],
+    },
+    fight: {
+      name: 'Fight',
+      description: 'You are fighting a monster.',
+      options: ['Attack', 'Dodge', 'Run'],
+      actions: [attack, dodge, goTown],
+    },
+    killMonster: {
+      name: 'Kill Monster',
+      description: 'The monster screams "Arg!" as it dies. You gain experience points and find gold.',
+      options: ['Go to town square', 'Go to town square', 'Go to town square'],
+      actions: [goTown, goTown, goTown],
+    },
+    lose: {
+      name: 'Lose',
+      description: 'You die. ☠️',
+      options: ['REPLAY?', 'REPLAY?', 'REPLAY?'],
+      actions: [restart, restart, restart],
+    },
+    win: {
+      name: 'Win',
+      description: 'You defeat the dragon! YOU WIN THE GAME! 🎉',
+      options: ['REPLAY?', 'REPLAY?', 'REPLAY?'],
+      actions: [restart, restart, restart],
+    },
+    easterEgg: {
+      name: 'Easter Egg',
+      description: 'You find a secret game. Pick a number above. Ten numbers will be randomly chosen between 0 and 10. If the number you choose matches one of the random numbers, you win!',
+      options: ['2', '8', 'Go to town square?'],
+      actions: [pickTwo, pickEight, goTown],
+    },
   };
 
   return (
@@ -206,7 +348,7 @@ const Game = () => {
         <p>{locations[gameState.location].description}</p>
       </div>
       <div className="player-stats">
-        <div className="stat">
+        <div className="stat stat-health">
           <h3>Health</h3>
           <div className="health-bar">
             <div 
@@ -214,37 +356,56 @@ const Game = () => {
               style={{width: `${(player.health / player.maxHealth) * 100}%`}}
             ></div>
           </div>
-          <p>{player.health}/{player.maxHealth}</p>
+          <p className="stat-health">{player.health}/{player.maxHealth}</p>
         </div>
-        <div className="stat">
+        <div className="stat stat-xp">
           <h3>XP</h3>
           <p>{player.xp}</p>
         </div>
-        <div className="stat">
+        <div className="stat stat-gold">
           <h3>Gold</h3>
           <p>{player.gold}</p>
         </div>
-        <div className="stat">
+        <div className="stat stat-level">
           <h3>Level</h3>
           <p>{player.level}</p>
         </div>
-        <div className="stat">
+        <div className="stat stat-class">
           <h3>Class</h3>
           <p>{player.class}</p>
         </div>
-        <div className="stat">
+        <div className="stat stat-weapon">
           <h3>Weapon</h3>
           <p>{weapons[player.currentWeaponIndex].name}</p>
         </div>
       </div>
+      {gameState.location === 'fight' && (
+        <div className="monster-stats">
+          <h3>Monster Health</h3>
+          <div className="health-bar">
+            <div 
+              className="health-bar-fill monster-health-bar-fill" 
+              style={{width: `${(gameState.monsterHealth / gameState.fighting.health) * 100}%`}}
+            ></div>
+          </div>
+          <p className="monster-health-text">{gameState.monsterHealth}/{gameState.fighting.health}</p>
+          <div className="actions">
+            <button onClick={attack}>Attack</button>
+            <button onClick={dodge}>Dodge</button>
+            <button onClick={goTown}>Retreat</button>
+          </div>
+        </div>
+      )}
       <div className="actions">
         <h3>Actions</h3>
         <div>
           {locations[gameState.location].options.map((option, index) => (
-            <button key={index} onClick={() => handleAction(option)}>
+            <button key={index} onClick={() => handleAction(locations[gameState.location].actions[index])}>
               {option}
             </button>
           ))}
+          <button onClick={checkQuests}>Check Quests</button>
+          <button onClick={easterEgg}>Easter Egg</button>
         </div>
       </div>
       <div className="quests">
