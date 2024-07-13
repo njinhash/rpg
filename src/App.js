@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import './App.css';
+import fightSvg from './assets/fight.svg'; // Import the SVG file
 
 const Game = () => {
   const [player, setPlayer] = useState({
@@ -101,7 +102,6 @@ const Game = () => {
     setShowQuests(false); // Hide quests display when a new button is clicked
     if (gameState.location === 'easterEgg') {
       setShowEasterEgg(false); // Reset Easter Egg availability
-      setEasterEggPlayed(false); // Reset Easter Egg played status
     }
   };
 
@@ -292,19 +292,20 @@ const Game = () => {
   const easterEgg = () => {
     setGameState({ ...gameState, location: 'easterEgg' });
   };
-
-  const pickTwo = () => {
-    pick(2);
+  
+  const handlePick = (guess) => {
+    if (easterEggPlayed) {
+      alert('You can only choose once.');
+      return;
+    }
+    pick(guess);
     setEasterEggPlayed(true); // Mark Easter Egg as played
     setShowEasterEgg(false); // Close Easter Egg after playing
   };
-
-  const pickEight = () => {
-    pick(8);
-    setEasterEggPlayed(true); // Mark Easter Egg as played
-    setShowEasterEgg(false); // Close Easter Egg after playing
-  };
-
+  
+  const pickTwo = () => handlePick(2);
+  const pickEight = () => handlePick(8);
+  
   const pick = (guess) => {
     const numbers = [];
     while (numbers.length < 10) {
@@ -434,6 +435,11 @@ const Game = () => {
           <p className="monster-health-text">{gameState.monsterHealth}/{gameState.fighting.health}</p>
         </div>
       )}
+      {gameState.location === 'fight' && (
+        <div className="fight-animation">
+          <img src={fightSvg} alt="Fight Animation" className="pulse-animation" />
+        </div>
+      )}
       <div className="actions">
         <h3>Actions</h3>
         <div>
@@ -459,6 +465,15 @@ const Game = () => {
               <p>Progress: {quest.progress}/{quest.target}</p>
             </div>
           ))}
+        </div>
+      )}
+      {gameState.location === 'easterEgg' && (
+        <div className="easter-egg">
+          <h3>Easter Egg</h3>
+          <p>You find a secret game. Pick a number above. Ten numbers will be randomly chosen between 0 and 10. If the number you choose matches one of the random numbers, you win!</p>
+          <button onClick={pickTwo} disabled={easterEggPlayed}>2</button>
+          <button onClick={pickEight} disabled={easterEggPlayed}>8</button>
+          <button onClick={goTown}>Go to town square?</button>
         </div>
       )}
       {message && (
