@@ -89,6 +89,10 @@ const Game = () => {
   const handleAction = (action) => {
     action();
     setShowQuests(false); // Hide quests display when a new button is clicked
+    if (gameState.location === 'easterEgg') {
+      setShowEasterEgg(false); // Reset Easter Egg availability
+      setEasterEggPlayed(false); // Reset Easter Egg played status
+    }
   };
 
   const buyHealth = () => {
@@ -276,6 +280,7 @@ const Game = () => {
     if (!easterEggPlayed) {
       pick(2);
       setEasterEggPlayed(true); // Mark Easter Egg as played
+      setShowEasterEgg(false); // Close Easter Egg after playing
     }
   };
 
@@ -283,6 +288,7 @@ const Game = () => {
     if (!easterEggPlayed) {
       pick(8);
       setEasterEggPlayed(true); // Mark Easter Egg as played
+      setShowEasterEgg(false); // Close Easter Egg after playing
     }
   };
 
@@ -300,6 +306,16 @@ const Game = () => {
       console.log('Wrong! You lose 10 health!');
       setPlayer(prevPlayer => ({ ...prevPlayer, health: prevPlayer.health - 10 }));
     }
+  };
+
+  // Randomly assign the Easter Egg action to one of the "Go to town square" buttons
+  const getRandomTownSquareActions = () => {
+    const actions = [goTown, goTown, goTown];
+    if (showEasterEgg && !easterEggPlayed) {
+      const randomIndex = Math.floor(Math.random() * actions.length);
+      actions[randomIndex] = easterEgg;
+    }
+    return actions;
   };
 
   const locations = {
@@ -331,7 +347,7 @@ const Game = () => {
       name: 'Kill Monster',
       description: 'The monster screams "Arg!" as it dies. You gain experience points and find gold.',
       options: ['Go to town square', 'Go to town square', 'Go to town square'],
-      actions: [goTown, goTown, goTown],
+      actions: getRandomTownSquareActions(),
     },
     lose: {
       name: 'Lose',
@@ -415,7 +431,6 @@ const Game = () => {
           {gameState.location === 'town' && (
             <>
               <button onClick={checkQuests}>Check Quests</button>
-              {showEasterEgg && <button onClick={easterEgg}>Easter Egg</button>}
             </>
           )}
         </div>
