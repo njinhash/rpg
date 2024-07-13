@@ -26,6 +26,8 @@ const Game = () => {
   ]);
 
   const [showQuests, setShowQuests] = useState(false);
+  const [showEasterEgg, setShowEasterEgg] = useState(false); // New state for Easter Egg
+  const [easterEggPlayed, setEasterEggPlayed] = useState(false); // Track if Easter Egg has been played
 
   const weapons = [
     { name: 'stick', power: 5 },
@@ -140,6 +142,8 @@ const Game = () => {
     updateQuestProgress(2, goldGained);
 
     console.log(`You defeated the ${monster.name}! Gained ${xpGained} XP and ${goldGained} gold.`);
+    setShowEasterEgg(true); // Show Easter Egg option after winning a monster battle
+    setEasterEggPlayed(false); // Reset Easter Egg played status
   };
 
   const checkQuests = () => {
@@ -260,6 +264,8 @@ const Game = () => {
       fighting: null,
       monsterHealth: 0,
     });
+    setShowEasterEgg(false); // Reset Easter Egg availability on restart
+    setEasterEggPlayed(false); // Reset Easter Egg played status on restart
   };
 
   const easterEgg = () => {
@@ -267,11 +273,17 @@ const Game = () => {
   };
 
   const pickTwo = () => {
-    pick(2);
+    if (!easterEggPlayed) {
+      pick(2);
+      setEasterEggPlayed(true); // Mark Easter Egg as played
+    }
   };
 
   const pickEight = () => {
-    pick(8);
+    if (!easterEggPlayed) {
+      pick(8);
+      setEasterEggPlayed(true); // Mark Easter Egg as played
+    }
   };
 
   const pick = (guess) => {
@@ -403,7 +415,7 @@ const Game = () => {
           {gameState.location === 'town' && (
             <>
               <button onClick={checkQuests}>Check Quests</button>
-              <button onClick={easterEgg}>Easter Egg</button>
+              {showEasterEgg && <button onClick={easterEgg}>Easter Egg</button>}
             </>
           )}
         </div>
