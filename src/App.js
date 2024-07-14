@@ -8,7 +8,7 @@ const Game = () => {
     health: 100,
     maxHealth: 100,
     xp: 0,
-    gold: 50,
+    gold: 20,
     level: 1,
     class: 'warrior',
     inventory: ['stick'],
@@ -324,7 +324,7 @@ const Game = () => {
 
   return (
     <div className="game-container">
-      <h1>Cyber Quest RPG</h1>
+      <h1>Dragolance Gloryblaze</h1>
       <div className="player-stats">
         <div className="stat stat-health">
           <h3>Health</h3>

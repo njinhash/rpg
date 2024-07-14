@@ -1,3 +1,5 @@
+
+
 @keyframes pulse {
   0% {
     transform: scale(1);
@@ -22,20 +24,26 @@ body {
   color: #00ff00;
   margin: 0;
   padding: 0;
-  background-image: url('./assets/dragon.svg'), linear-gradient(to bottom, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8));
+  background-image: url('./assets/dragon.svg'), linear-gradient(to bottom, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.2));
   background-size: cover;
   background-blend-mode: lighten; /* Changed blend mode */
 }
 
 .game-container {
   max-width: 550px;
-  height: 80vh;
+  height: 87vh;
   margin: -10px auto;
   padding-top: 3px;
   background-color: rgba(26, 26, 26, 0.2);
   border: 2px solid #00ff00;
   border-radius: 10px;
   box-shadow: 0 0 10px #00ff00;
+}
+h1 {
+  animation: glow 2s infinite;
+  background-color: rgba(0, 0, 0, 0.9); /* Black background with 0.9 opacity */
+  padding: 10px; /* Optional: Add some padding for better appearance */
+  border-radius: 5px;
 }
 
 h1, h2, h3 {
@@ -56,7 +64,7 @@ h1, h2, h3 {
   display: flex;
   justify-content: space-around;
   flex-wrap: wrap;
-  background-color: rgba(50, 0, 0, 0.9); /* Dark red background */
+  background-color: rgba(179, 0, 0, 0.9); /* Dark red background */
   border: 1px solid #ff0000; /* Red border */
   border-radius: 5px;
   padding: 10px;
@@ -78,11 +86,10 @@ h1, h2, h3 {
   padding: 10px;
   margin-bottom: 5px;
 }
-
 button {
-  background-color: #1a1a1a;
-  color: #00ff00;
-  border: 1px solid #00ff00;
+  background-color: #C32421; /* Primary button color */
+  color: #FFFFFF; /* Text color */
+  border: 1px solid #8A3427; /* Border color */
   border-radius: 5px;
   padding: 10px 20px;
   margin: 5px;
@@ -91,10 +98,23 @@ button {
 }
 
 button:hover {
-  background-color: #00ff00;
-  color: #0a0a0a;
-  box-shadow: 0 0 10px #00ff00;
+  background-color: #8A3427; /* Hover background color */
+  color: #FFFFFF; /* Hover text color */
+  box-shadow: 0 0 10px #5E3229; /* Hover shadow color */
 }
+
+button:active {
+  background-color: #5E3229; /* Active background color */
+  border-color: #4B2F23; /* Active border color */
+}
+
+button:disabled {
+  background-color: #8F6A58; /* Disabled background color */
+  color: #3D2E31; /* Disabled text color */
+  border-color: #3D2E31; /* Disabled border color */
+  cursor: not-allowed;
+}
+
 
 .health-bar {
   width: 100%;
@@ -132,7 +152,6 @@ button:hover {
   margin: 10px 0; /* Add some margin for spacing */
   background-color: rgba(10, 10, 10, 0.7);
 }
-
 
 @keyframes glow {
   0% {
@@ -186,4 +205,11 @@ h1 {
   height: 70px; /* Adjust height as needed */
   padding: 0;
   margin: 0;
+}
+
+/* Media Query to stop background SVG from shrinking at 700px */
+@media (max-width: 700px) {
+  body {
+    background-size: 700px auto, cover; /* Fix the SVG size */
+  }
 }
