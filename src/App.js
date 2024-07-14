@@ -27,9 +27,7 @@ const Game = () => {
   ]);
 
   const [showQuests, setShowQuests] = useState(false);
-  const [showEasterEgg, setShowEasterEgg] = useState(false); // New state for Easter Egg
-  const [easterEggPlayed, setEasterEggPlayed] = useState(false); // Track if Easter Egg has been played
-  const [message, setMessage] = useState(''); // New state for messages
+  const [message, setMessage] = useState('');
 
   const weapons = [
     { name: 'stick', power: 5 },
@@ -99,10 +97,7 @@ const Game = () => {
 
   const handleAction = (action) => {
     action();
-    setShowQuests(false); // Hide quests display when a new button is clicked
-    if (gameState.location === 'easterEgg') {
-      setShowEasterEgg(false); // Reset Easter Egg availability
-    }
+    setShowQuests(false);
   };
 
   const buyHealth = () => {
@@ -114,7 +109,7 @@ const Game = () => {
         health: Math.min(player.health + 10, player.maxHealth),
         gold: player.gold - 10,
       });
-      setMessage(''); // Clear message
+      setMessage('');
     } else {
       setMessage('Not enough gold to buy health.');
     }
@@ -128,7 +123,7 @@ const Game = () => {
         currentWeaponIndex: player.currentWeaponIndex + 1,
         inventory: [...player.inventory, weapons[player.currentWeaponIndex + 1].name],
       });
-      setMessage(''); // Clear message
+      setMessage('');
     } else if (player.gold < 30) {
       setMessage('Not enough gold to buy a weapon.');
     } else {
@@ -162,9 +157,6 @@ const Game = () => {
     updateQuestProgress(2, goldGained);
 
     console.log(`You defeated the ${monster.name}! Gained ${xpGained} XP and ${goldGained} gold.`);
-    if (!easterEggPlayed) {
-      setShowEasterEgg(true); // Show Easter Egg option after winning a monster battle
-    }
   };
 
   const checkQuests = () => {
@@ -208,11 +200,9 @@ const Game = () => {
     const monsterHealth = gameState.monsterHealth;
     const playerHealth = player.health;
 
-    // Monster attacks
     const monsterAttackValue = getMonsterAttackValue(monster.level);
     const newPlayerHealth = playerHealth - monsterAttackValue;
 
-    // Player attacks
     let newMonsterHealth = monsterHealth;
     if (isMonsterHit()) {
       newMonsterHealth -= weapons[player.currentWeaponIndex].power + Math.floor(Math.random() * player.xp) + 1;
@@ -224,7 +214,7 @@ const Game = () => {
     if (newPlayerHealth <= 0) {
       lose();
     } else if (newMonsterHealth <= 0) {
-      simulateFightWin(monster); // Call simulateFightWin when monster is defeated
+      simulateFightWin(monster);
       if (monster.name === 'dragon') {
         winGame();
       } else {
@@ -285,52 +275,6 @@ const Game = () => {
       fighting: null,
       monsterHealth: 0,
     });
-    setShowEasterEgg(false); // Reset Easter Egg availability on restart
-    setEasterEggPlayed(false); // Reset Easter Egg played status on restart
-  };
-
-  const easterEgg = () => {
-    setGameState({ ...gameState, location: 'easterEgg' });
-  };
-  
-  const handlePick = (guess) => {
-    if (easterEggPlayed) {
-      alert('You can only choose once.');
-      return;
-    }
-    pick(guess);
-    setEasterEggPlayed(true); // Mark Easter Egg as played
-    setShowEasterEgg(false); // Close Easter Egg after playing
-  };
-  
-  const pickTwo = () => handlePick(2);
-  const pickEight = () => handlePick(8);
-  
-  const pick = (guess) => {
-    const numbers = [];
-    while (numbers.length < 10) {
-      numbers.push(Math.floor(Math.random() * 11));
-    }
-    console.log(`You picked ${guess}. Here are the random numbers:`);
-    numbers.forEach(num => console.log(num));
-    if (numbers.includes(guess)) {
-      console.log('Right! You win 20 gold!');
-      setPlayer(prevPlayer => ({ ...prevPlayer, gold: prevPlayer.gold + 20 }));
-    } else {
-      console.log('Wrong! You lose 10 health!');
-      setPlayer(prevPlayer => ({ ...prevPlayer, health: prevPlayer.health - 10 }));
-    }
-    setShowEasterEgg(false); // Close Easter Egg after playing
-  };
-
-  // Randomly assign the Easter Egg action to one of the "Go to town square" buttons
-  const getRandomTownSquareActions = () => {
-    const actions = [goTown, goTown, goTown];
-    if (showEasterEgg && !easterEggPlayed) {
-      const randomIndex = Math.floor(Math.random() * actions.length);
-      actions[randomIndex] = easterEgg;
-    }
-    return actions;
   };
 
   const locations = {
@@ -343,8 +287,8 @@ const Game = () => {
     store: {
       name: 'Store',
       description: 'You enter the store.',
-      options: ['Buy 10 health (10 gold)', 'Buy weapon (30 gold)', 'Go to town square'],
-      actions: [buyHealth, buyWeapon, goTown],
+      options: ['Buy 10 health (10 gold)', 'Buy weapon (30 gold)', 'Go to town square','Go to cave'],
+      actions: [buyHealth, buyWeapon, goTown, goCave],
     },
     cave: {
       name: 'Cave',
@@ -361,8 +305,8 @@ const Game = () => {
     killMonster: {
       name: 'Kill Monster',
       description: 'The monster screams "Arg!" as it dies. You gain experience points and find gold.',
-      options: ['Go to town square', 'Go to town square', 'Go to town square'],
-      actions: getRandomTownSquareActions(),
+      options: ['Fight slime', 'Fight fanged beast', 'Fight dragon','Go to store','Go to town square'],
+      actions: [fightSlime, fightBeast, fightDragon, goStore, goTown],
     },
     lose: {
       name: 'Lose',
@@ -375,12 +319,6 @@ const Game = () => {
       description: 'You defeat the dragon! YOU WIN THE GAME! 🎉',
       options: ['REPLAY?', 'REPLAY?', 'REPLAY?'],
       actions: [restart, restart, restart],
-    },
-    easterEgg: {
-      name: 'Easter Egg',
-      description: 'You find a secret game. Pick a number above. Ten numbers will be randomly chosen between 0 and 10. If the number you choose matches one of the random numbers, you win!',
-      options: ['2', '8', 'Go to town square?'],
-      actions: [pickTwo, pickEight, goTown],
     },
   };
 
@@ -420,21 +358,21 @@ const Game = () => {
         </div>
       </div>
       {gameState.location === 'fight' && (
-        <div className="monster-stats">
-          <h3>Monster Health</h3>
-          <div className="health-bar">
-            <div 
-              className="health-bar-fill monster-health-bar-fill" 
-              style={{width: `${(gameState.monsterHealth / gameState.fighting.health) * 100}%`}}
-            ></div>
+        <>
+          <div className="monster-stats">
+            <h3>Monster Health</h3>
+            <div className="health-bar">
+              <div 
+                className="health-bar-fill monster-health-bar-fill" 
+                style={{width: `${(gameState.monsterHealth / gameState.fighting.health) * 100}%`}}
+              ></div>
+            </div>
+            <p className="monster-health-text">{gameState.monsterHealth}/{gameState.fighting.health}</p>
           </div>
-          <p className="monster-health-text">{gameState.monsterHealth}/{gameState.fighting.health}</p>
-        </div>
-      )}
-      {gameState.location === 'fight' && (
-        <div className="fight-animation">
-          <img src={fightSvg} alt="Fight Animation" className="pulse-animation" />
-        </div>
+          <div className="fight-animation">
+            <img src={fightSvg} alt="Fight Animation" className="pulse-animation" />
+          </div>
+        </>
       )}
       <div className="actions">
         <h3>Actions</h3>
@@ -461,15 +399,6 @@ const Game = () => {
               <p>Progress: {quest.progress}/{quest.target}</p>
             </div>
           ))}
-        </div>
-      )}
-      {gameState.location === 'easterEgg' && (
-        <div className="easter-egg">
-          <h3>Easter Egg</h3>
-          <p>You find a secret game. Pick a number above. Ten numbers will be randomly chosen between 0 and 10. If the number you choose matches one of the random numbers, you win!</p>
-          <button onClick={pickTwo} disabled={easterEggPlayed}>2</button>
-          <button onClick={pickEight} disabled={easterEggPlayed}>8</button>
-          <button onClick={goTown}>Go to town square?</button>
         </div>
       )}
       {message && (
